@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>どっちがおトク？計算機</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --accent-color: #03dac6;
+            --highlight-color: #cf6679;
+            --win-color: #4caf50;
+        }
+
+        body {
+            font-family: sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h2 { margin: 10px 0; font-size: 1.2rem; color: var(--accent-color); }
+
+        .container {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .product-card {
+            flex: 1;
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 12px;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .product-card.winner {
+            border-color: var(--win-color);
+            background: #1b2e1b;
+        }
+
+        .label { font-size: 0.8rem; margin-bottom: 5px; color: #bbb; }
+
+        input {
+            width: 100%;
+            background: #333;
+            border: 1px solid #444;
+            color: white;
+            padding: 12px 8px;
+            font-size: 1.1rem;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+            inputmode: decimal;
+        }
+
+        .result-area {
+            margin-top: 10px;
+            text-align: center;
+            min-height: 50px;
+        }
+
+        .unit-price {
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .win-badge {
+            display: none;
+            background: var(--win-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-bottom: 5px;
+        }
+
+        .product-card.winner .win-badge { display: inline-block; }
+
+        .diff {
+            margin-top: 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+    </style>
+</head>
+<body>
+
+    <h2>どっちがおトク？</h2>
+
+    <div class="container">
+        <div id="cardA" class="product-card">
+            <div class="win-badge">こちらが安い！</div>
+            <div class="label">価格 (円)</div>
+            <input type="number" id="priceA" placeholder="例: 698" oninput="compare()">
+            
+            <div class="label">容量1 (ml・組)</div>
+            <input type="number" id="qtyA1" placeholder="例: 150" oninput="compare()">
+            
+            <div class="label">容量2 (個・箱)</div>
+            <input type="number" id="qtyA2" value="1" oninput="compare()">
+
+            <div class="result-area">
+                <div id="unitA" class="unit-price">-</div>
+            </div>
+        </div>
+
+        <div id="cardB" class="product-card">
+            <div class="win-badge">こちらが安い！</div>
+            <div class="label">価格 (円)</div>
+            <input type="number" id="priceB" placeholder="例: 1100" oninput="compare()">
+            
+            <div class="label">容量1 (ml・組)</div>
+            <input type="number" id="qtyB1" placeholder="例: 200" oninput="compare()">
+            
+            <div class="label">容量2 (個・箱)</div>
+            <input type="number" id="qtyB2" value="1" oninput="compare()">
+
+            <div class="result-area">
+                <div id="unitB" class="unit-price">-</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="diff-msg" class="diff"></div>
+
+    <script>
+        function compare() {
+            const getVal = (id) => parseFloat(document.getElementById(id).value) || 0;
+
+            const pA = getVal('priceA'), qA1 = getVal('qtyA1'), qA2 = getVal('qtyA2');
+            const pB = getVal('priceB'), qB1 = getVal('qtyB1'), qB2 = getVal('qtyB2');
+
+            const totalA = qA1 * qA2;
+            const totalB = qB1 * qB2;
+
+            const unitA = totalA > 0 ? pA / totalA : 0;
+            const unitB = totalB > 0 ? pB / totalB : 0;
+
+            const cardA = document.getElementById('cardA');
+            const cardB = document.getElementById('cardB');
+            const diffMsg = document.getElementById('diff-msg');
+
+            // 表示更新
+            document.getElementById('unitA').innerText = unitA > 0 ? unitA.toFixed(3) + " 円/単位" : "-";
+            document.getElementById('unitB').innerText = unitB > 0 ? unitB.toFixed(3) + " 円/単位" : "-";
+
+            // 判定
+            cardA.classList.remove('winner');
+            cardB.classList.remove('winner');
+            diffMsg.innerText = "";
+
+            if (unitA > 0 && unitB > 0) {
+                if (unitA < unitB) {
+                    cardA.classList.add('winner');
+                    const save = (1 - (unitA / unitB)) * 100;
+                    diffMsg.innerText = "Aの方が約 " + save.toFixed(1) + "% おトク！";
+                } else if (unitB < unitA) {
+                    cardB.classList.add('winner');
+                    const save = (1 - (unitB / unitA)) * 100;
+                    diffMsg.innerText = "Bの方が約 " + save.toFixed(1) + "% おトク！";
+                } else {
+                    diffMsg.innerText = "どちらも同じです";
+                }
+            }
+        }
+    </script>
+</body>
+</html>
