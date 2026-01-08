@@ -2,178 +2,339 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>どっちがおトク？計算機</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>おトク判定＆底値メモ</title>
+
+    <!-- アプリ化設定 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="おトク判定">
+    <meta name="mobile-web-app-capable" content="yes">
+
     <style>
         :root {
-            --bg-color: #121212;
-            --card-bg: #1e1e1e;
-            --text-color: #e0e0e0;
-            --accent-color: #03dac6;
-            --highlight-color: #cf6679;
-            --win-color: #4caf50;
+            --bg: #000000;
+            --card: #1c1c1e;
+            --input: #2c2c2e;
+            --text: #ffffff;
+            --sub: #8e8e93;
+            --accent: #30d158;
+            --border: #3a3a3c;
+            --blue: #0a84ff;
         }
 
         body {
-            font-family: sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            font-family: -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
             margin: 0;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            padding: env(safe-area-inset-top) 15px 40px 15px;
+            user-select: none;
         }
 
-        h2 { margin: 10px 0; font-size: 1.2rem; color: var(--accent-color); }
+        h1 { font-size: 1.2rem; text-align: center; margin: 20px 0; }
+        h2 { font-size: 1rem; margin: 25px 0 10px 0; color: var(--sub); border-bottom: 1px solid var(--border); padding-bottom: 5px;}
 
-        .container {
-            display: flex;
-            gap: 10px;
-            width: 100%;
-            max-width: 500px;
-        }
-
+        .container { display: flex; gap: 10px; width: 100%; max-width: 600px; margin: 0 auto; }
+        
         .product-card {
             flex: 1;
-            background: var(--card-bg);
-            padding: 15px;
-            border-radius: 12px;
+            background: var(--card);
+            padding: 12px;
+            border-radius: 16px;
             border: 2px solid transparent;
-            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            transition: 0.2s;
         }
 
-        .product-card.winner {
-            border-color: var(--win-color);
-            background: #1b2e1b;
-        }
+        .product-card.winner { border-color: var(--accent); background: #1c2a1c; }
 
-        .label { font-size: 0.8rem; margin-bottom: 5px; color: #bbb; }
-
+        .field { margin-bottom: 8px; }
+        .field label { font-size: 0.65rem; color: var(--sub); display: block; margin-bottom: 2px; }
+        
         input {
             width: 100%;
-            background: #333;
-            border: 1px solid #444;
+            background: var(--input);
+            border: 1px solid var(--border);
             color: white;
-            padding: 12px 8px;
-            font-size: 1.1rem;
-            border-radius: 6px;
-            margin-bottom: 15px;
+            padding: 10px;
+            font-size: 1rem;
+            border-radius: 8px;
             box-sizing: border-box;
-            inputmode: decimal;
-        }
-
-        .result-area {
-            margin-top: 10px;
-            text-align: center;
-            min-height: 50px;
+            outline: none;
         }
 
         .unit-price {
-            font-size: 0.9rem;
-            font-weight: bold;
+            text-align: center;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border);
         }
+        .unit-val { font-size: 1.1rem; font-weight: bold; display: block; }
+        .winner .unit-val { color: var(--accent); }
 
-        .win-badge {
-            display: none;
-            background: var(--win-color);
-            color: white;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            margin-bottom: 5px;
-        }
-
-        .product-card.winner .win-badge { display: inline-block; }
-
-        .diff {
+        /* 記録セクション */
+        .save-section {
+            background: var(--card);
             margin-top: 20px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: var(--accent-color);
+            padding: 15px;
+            border-radius: 16px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
         }
+
+        .save-btn {
+            width: 100%;
+            background: var(--blue);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .save-btn:disabled { background: #333; color: #666; }
+
+        /* 履歴リスト */
+        .history-list { max-width: 600px; margin: 0 auto; }
+        .history-item {
+            background: var(--card);
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .hist-main { display: flex; flex-direction: column; }
+        .hist-name { font-weight: bold; }
+        .hist-store { font-size: 0.8rem; color: var(--sub); }
+        .hist-price { text-align: right; }
+        .hist-unit { font-size: 0.9rem; color: var(--accent); font-weight: bold; }
+        .hist-date { font-size: 0.6rem; color: var(--sub); }
+
+        .delete-btn { color: #ff453a; font-size: 0.7rem; margin-left: 10px; border: 1px solid #ff453a; padding: 2px 5px; border-radius: 4px; }
+
+        #loading { text-align: center; color: var(--sub); font-size: 0.8rem; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-    <h2>どっちがおトク？</h2>
+    <h1>おトク判定 ＆ 底値メモ</h1>
 
     <div class="container">
+        <!-- A -->
         <div id="cardA" class="product-card">
-            <div class="win-badge">こちらが安い！</div>
-            <div class="label">価格 (円)</div>
-            <input type="number" id="priceA" placeholder="例: 698" oninput="compare()">
-            
-            <div class="label">容量1 (ml・組)</div>
-            <input type="number" id="qtyA1" placeholder="例: 150" oninput="compare()">
-            
-            <div class="label">容量2 (個・箱)</div>
-            <input type="number" id="qtyA2" value="1" oninput="compare()">
-
-            <div class="result-area">
-                <div id="unitA" class="unit-price">-</div>
+            <div class="field">
+                <label>価格(円)</label>
+                <input type="number" id="pA" placeholder="0" inputmode="decimal" oninput="calc()">
+            </div>
+            <div class="field">
+                <label>容量1(ml/組)</label>
+                <input type="number" id="qA1" placeholder="0" inputmode="decimal" oninput="calc()">
+            </div>
+            <div class="field">
+                <label>容量2(個/箱)</label>
+                <input type="number" id="qA2" value="1" inputmode="decimal" oninput="calc()">
+            </div>
+            <div class="unit-price">
+                <span id="resA" class="unit-val">-</span>
+                <label>円/単位</label>
             </div>
         </div>
 
+        <!-- B -->
         <div id="cardB" class="product-card">
-            <div class="win-badge">こちらが安い！</div>
-            <div class="label">価格 (円)</div>
-            <input type="number" id="priceB" placeholder="例: 1100" oninput="compare()">
-            
-            <div class="label">容量1 (ml・組)</div>
-            <input type="number" id="qtyB1" placeholder="例: 200" oninput="compare()">
-            
-            <div class="label">容量2 (個・箱)</div>
-            <input type="number" id="qtyB2" value="1" oninput="compare()">
-
-            <div class="result-area">
-                <div id="unitB" class="unit-price">-</div>
+            <div class="field">
+                <label>価格(円)</label>
+                <input type="number" id="pB" placeholder="0" inputmode="decimal" oninput="calc()">
+            </div>
+            <div class="field">
+                <label>容量1(ml/組)</label>
+                <input type="number" id="qB1" placeholder="0" inputmode="decimal" oninput="calc()">
+            </div>
+            <div class="field">
+                <label>容量2(個/箱)</label>
+                <input type="number" id="qB2" value="1" inputmode="decimal" oninput="calc()">
+            </div>
+            <div class="unit-price">
+                <span id="resB" class="unit-val">-</span>
+                <label>円/単位</label>
             </div>
         </div>
     </div>
 
-    <div id="diff-msg" class="diff"></div>
+    <!-- 記録エリア -->
+    <div class="save-section">
+        <div class="field">
+            <label>商品名 (例: 洗剤、おむつ)</label>
+            <input type="text" id="itemName" placeholder="何を買った？">
+        </div>
+        <div class="field">
+            <label>店名</label>
+            <input type="text" id="storeName" placeholder="どこの店？">
+        </div>
+        <button id="saveBtn" class="save-btn" onclick="saveData()" disabled>今の最安値を記録する</button>
+        <div id="loading">接続中...</div>
+    </div>
 
-    <script>
-        function compare() {
-            const getVal = (id) => parseFloat(document.getElementById(id).value) || 0;
+    <h2>履歴・底値リスト</h2>
+    <div id="history" class="history-list">
+        <!-- 履歴がここに表示される -->
+    </div>
 
-            const pA = getVal('priceA'), qA1 = getVal('qtyA1'), qA2 = getVal('qtyA2');
-            const pB = getVal('priceB'), qB1 = getVal('qtyB1'), qB2 = getVal('qtyB2');
+    <!-- Firebase設定 -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-            const totalA = qA1 * qA2;
-            const totalB = qB1 * qB2;
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-            const unitA = totalA > 0 ? pA / totalA : 0;
-            const unitB = totalB > 0 ? pB / totalB : 0;
+        let currentUser = null;
+        let winnerData = null;
+
+        // 1. 認証 (Rule 3)
+        async function initAuth() {
+            try {
+                await signInAnonymously(auth);
+            } catch (e) {
+                console.error("Auth error", e);
+            }
+        }
+        initAuth();
+
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            if (user) {
+                document.getElementById('loading').innerText = "ログイン中";
+                loadHistory();
+            }
+        });
+
+        // 2. 計算ロジック
+        window.calc = () => {
+            const v = (id) => parseFloat(document.getElementById(id).value) || 0;
+            const pA = v('pA'), qA = v('qA1') * v('qA2');
+            const pB = v('pB'), qB = v('qB1') * v('qB2');
+
+            const uA = qA > 0 ? pA / qA : 0;
+            const uB = qB > 0 ? pB / qB : 0;
+
+            document.getElementById('resA').innerText = uA > 0 ? uA.toFixed(2) : "-";
+            document.getElementById('resB').innerText = uB > 0 ? uB.toFixed(2) : "-";
 
             const cardA = document.getElementById('cardA');
             const cardB = document.getElementById('cardB');
-            const diffMsg = document.getElementById('diff-msg');
-
-            // 表示更新
-            document.getElementById('unitA').innerText = unitA > 0 ? unitA.toFixed(3) + " 円/単位" : "-";
-            document.getElementById('unitB').innerText = unitB > 0 ? unitB.toFixed(3) + " 円/単位" : "-";
-
-            // 判定
             cardA.classList.remove('winner');
             cardB.classList.remove('winner');
-            diffMsg.innerText = "";
 
-            if (unitA > 0 && unitB > 0) {
-                if (unitA < unitB) {
+            winnerData = null;
+            document.getElementById('saveBtn').disabled = true;
+
+            if (uA > 0 && uB > 0) {
+                document.getElementById('saveBtn').disabled = false;
+                if (uA <= uB) {
                     cardA.classList.add('winner');
-                    const save = (1 - (unitA / unitB)) * 100;
-                    diffMsg.innerText = "Aの方が約 " + save.toFixed(1) + "% おトク！";
-                } else if (unitB < unitA) {
-                    cardB.classList.add('winner');
-                    const save = (1 - (unitB / unitA)) * 100;
-                    diffMsg.innerText = "Bの方が約 " + save.toFixed(1) + "% おトク！";
+                    winnerData = { price: pA, unitPrice: uA };
                 } else {
-                    diffMsg.innerText = "どちらも同じです";
+                    cardB.classList.add('winner');
+                    winnerData = { price: pB, unitPrice: uB };
                 }
             }
+        };
+
+        // 3. データ保存 (Rule 1)
+        window.saveData = async () => {
+            if (!currentUser || !winnerData) return;
+            const itemName = document.getElementById('itemName').value || "未設定の商品";
+            const storeName = document.getElementById('storeName').value || "不明な店";
+
+            const btn = document.getElementById('saveBtn');
+            btn.disabled = true;
+            btn.innerText = "保存中...";
+
+            try {
+                const colRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'purchases');
+                await addDoc(colRef, {
+                    itemName,
+                    storeName,
+                    price: winnerData.price,
+                    unitPrice: winnerData.unitPrice,
+                    createdAt: serverTimestamp()
+                });
+                
+                // 入力クリア
+                document.getElementById('itemName').value = "";
+                document.getElementById('storeName').value = "";
+                alert("記録しました！");
+            } catch (e) {
+                console.error("Save error", e);
+            } finally {
+                btn.innerText = "今の最安値を記録する";
+                calc();
+            }
+        };
+
+        // 4. データ読み取り (Rule 2)
+        function loadHistory() {
+            if (!currentUser) return;
+            const colRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'purchases');
+            
+            // シンプルなクエリで全取得し、メモリ内でソート
+            onSnapshot(colRef, (snapshot) => {
+                const list = [];
+                snapshot.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
+                
+                // 新しい順にソート
+                list.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+                renderHistory(list);
+            }, (err) => console.error("Snapshot error", err));
         }
+
+        function renderHistory(data) {
+            const container = document.getElementById('history');
+            container.innerHTML = "";
+
+            if (data.length === 0) {
+                container.innerHTML = "<div style='text-align:center; color:#666; font-size:0.8rem;'>まだ記録がありません</div>";
+                return;
+            }
+
+            data.forEach(item => {
+                const date = item.createdAt ? new Date(item.createdAt.seconds * 1000).toLocaleDateString() : "-";
+                const div = document.createElement('div');
+                div.className = "history-item";
+                div.innerHTML = `
+                    <div class="hist-main">
+                        <span class="hist-name">${item.itemName}</span>
+                        <span class="hist-store">${item.storeName}</span>
+                        <span class="hist-date">${date}</span>
+                    </div>
+                    <div class="hist-price">
+                        <div class="hist-unit">単価 ${item.unitPrice.toFixed(2)}</div>
+                        <div style="font-size:0.7rem;">(計 ${item.price}円)</div>
+                        <button class="delete-btn" onclick="deleteHistory('${item.id}')">消去</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        window.deleteHistory = async (docId) => {
+            if (!confirm("この記録を削除しますか？")) return;
+            const docRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'purchases', docId);
+            await deleteDoc(docRef);
+        };
+
     </script>
 </body>
 </html>
